@@ -1,0 +1,127 @@
+<section class="inner-page-shell passenger-page">
+  <div class="inner-hero compact">
+    <div>
+      <p class="eyebrow">Traveller Details</p>
+      <h1>Collect passenger information in one clean, premium workspace.</h1>
+      <p>Seat assignments are already attached, so this step just finalizes the booking payload for your backend.</p>
+    </div>
+    <div class="hero-stat-grid compact">
+      <div class="hero-stat">
+        <span>{{ state.passengerForms.length }}</span>
+        <small>Forms ready</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.selectedSeatCount }}</span>
+        <small>Seats linked</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.bookingData.tripType }}</span>
+        <small>Trip mode</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid passenger-layout">
+    <div class="traveller-form-stack">
+      <article class="surface-card traveller-form-card" *ngFor="let passenger of state.passengerForms; let i = index">
+        <div class="card-heading">
+          <div>
+            <p class="section-tag">Traveller {{ i + 1 }}</p>
+            <h2>{{ state.selectedSeats[i]?.seatNumber || 'Seat pending' }}</h2>
+          </div>
+          <span class="status-pill subtle">{{ passenger.passengerType }}</span>
+        </div>
+
+        <div class="booking-form-grid">
+          <label>
+            Title
+            <input [(ngModel)]="passenger.title" />
+          </label>
+          <label>
+            First name
+            <input [(ngModel)]="passenger.firstName" />
+          </label>
+          <label>
+            Last name
+            <input [(ngModel)]="passenger.lastName" />
+          </label>
+          <label>
+            Date of birth
+            <input type="date" [(ngModel)]="passenger.dateOfBirth" />
+          </label>
+          <label>
+            Gender
+            <select [(ngModel)]="passenger.gender">
+              <option *ngFor="let item of state.genders" [value]="item">{{ item }}</option>
+            </select>
+          </label>
+          <label>
+            Passenger type
+            <select [(ngModel)]="passenger.passengerType">
+              <option *ngFor="let item of state.passengerTypes" [value]="item">{{ item }}</option>
+            </select>
+          </label>
+          <label>
+            Passport number
+            <input [(ngModel)]="passenger.passportNumber" />
+          </label>
+          <label>
+            Nationality
+            <input [(ngModel)]="passenger.nationality" />
+          </label>
+          <label>
+            Passport expiry
+            <input type="date" [(ngModel)]="passenger.passportExpiry" />
+          </label>
+        </div>
+      </article>
+    </div>
+
+    <article class="surface-card passenger-summary-card">
+      <p class="section-tag">Checkout Preview</p>
+      <h2>Booking you are about to create</h2>
+
+      <ul class="summary-list">
+        <li>
+          <span>Flight</span>
+          <strong>{{ state.selectedFlight?.flightNumber || '-' }}</strong>
+        </li>
+        <li>
+          <span>Route</span>
+          <strong>{{ state.selectedFlight?.originAirportCode }} → {{ state.selectedFlight?.destinationAirportCode }}</strong>
+        </li>
+        <li>
+          <span>Contact</span>
+          <strong>{{ state.bookingData.contactEmail || 'Not filled' }}</strong>
+        </li>
+        <li>
+          <span>Phone</span>
+          <strong>{{ state.bookingData.contactPhone || 'Not filled' }}</strong>
+        </li>
+      </ul>
+
+      <div class="selection-board">
+        <div class="selection-card" *ngFor="let seat of state.selectedSeats; let i = index">
+          <span>Traveller {{ i + 1 }}</span>
+          <strong>{{ seat?.seatNumber || 'Seat missing' }}</strong>
+        </div>
+      </div>
+
+      <div class="fare-summary-box" *ngIf="state.fareSummary">
+        <h3>Estimated total</h3>
+        <div class="summary-row">
+          <span>Base fare</span>
+          <strong>{{ state.fareSummary.baseFare | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div class="summary-row emphasis">
+          <span>Total fare</span>
+          <strong>{{ state.fareSummary.totalFare | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+      </div>
+
+      <button type="button" class="primary-button wide" (click)="state.createBooking()" [disabled]="state.loading">
+        Create booking and payment
+      </button>
+    </article>
+  </div>
+</section>

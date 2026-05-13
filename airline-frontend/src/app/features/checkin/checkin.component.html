@@ -1,0 +1,78 @@
+<section class="inner-page-shell checkin-page">
+  <div class="inner-hero compact">
+    <div>
+      <p class="eyebrow">Check-in Centre</p>
+      <h1>One place for boarding readiness, PNR retrieval, and travel documents.</h1>
+      <p>Use your PNR to reopen a trip, review passengers, and access tickets and boarding passes quickly.</p>
+    </div>
+    <div class="hero-stat-grid compact">
+      <div class="hero-stat">
+        <span>{{ state.bookedPassengers.length }}</span>
+        <small>Travellers</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.lookupResult?.status || state.bookingResult?.status || 'NA' }}</span>
+        <small>Booking state</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.eticketDocument ? 'Ready' : 'Pending' }}</span>
+        <small>E-ticket</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid">
+    <article class="surface-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Open by PNR</p>
+          <h2>Prepare a trip for departure</h2>
+        </div>
+      </div>
+
+      <div class="booking-form-grid">
+        <label>
+          PNR code
+          <input [(ngModel)]="state.lookupData.pnrCode" placeholder="ABC123" />
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="primary-button" (click)="state.loadCheckinWorkspace()">Load trip</button>
+        <button type="button" class="secondary-button" (click)="state.loadEticket()" [disabled]="!(state.lookupResult?.bookingId || state.bookingResult?.bookingId)">
+          Load e-ticket
+        </button>
+      </div>
+    </article>
+
+    <article class="surface-card">
+      <p class="section-tag">Passenger Readiness</p>
+      <h2>Boarding pass access</h2>
+
+      <div class="document-board" *ngIf="state.bookedPassengers.length; else noPassengers">
+        <div class="document-card" *ngFor="let passenger of state.bookedPassengers">
+          <strong>{{ passenger.firstName }} {{ passenger.lastName }}</strong>
+          <span>{{ passenger.seatNumber || 'Seat pending' }}</span>
+          <button type="button" class="primary-button" (click)="state.loadBoardingPass(passenger)">
+            Load boarding pass
+          </button>
+          <button
+            type="button"
+            class="secondary-button"
+            *ngIf="state.boardingPassDocuments[passenger.passengerId]"
+            (click)="state.downloadDocument(state.boardingPassDocuments[passenger.passengerId], passenger.firstName + '-boarding-pass.pdf')"
+          >
+            Download pass
+          </button>
+        </div>
+      </div>
+
+      <ng-template #noPassengers>
+        <div class="empty-surface slim">
+          <h3>No travellers loaded</h3>
+          <p>Lookup a booking first and passenger records will appear here.</p>
+        </div>
+      </ng-template>
+    </article>
+  </div>
+</section>
