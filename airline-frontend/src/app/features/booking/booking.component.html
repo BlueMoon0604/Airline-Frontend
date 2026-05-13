@@ -1,0 +1,173 @@
+<section class="inner-page-shell booking-page">
+  <div class="inner-hero compact">
+    <div>
+      <p class="eyebrow">Seat & Fare Workspace</p>
+      <h1>Lock seats, tune add-ons, and shape the booking before checkout.</h1>
+      <p *ngIf="state.selectedFlight">
+        {{ state.selectedFlight.originAirportCode }} to {{ state.selectedFlight.destinationAirportCode }}
+        on {{ state.selectedFlight.departureTime | date:'mediumDate' }}
+      </p>
+    </div>
+    <div class="hero-stat-grid compact">
+      <div class="hero-stat">
+        <span>{{ state.searchData.passengers }}</span>
+        <small>Travellers</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.availableSeats.length }}</span>
+        <small>Open seats</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.selectedSeatCount }}</span>
+        <small>Assigned</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid booking-layout">
+    <article class="surface-card flight-summary-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Selected Flight</p>
+          <h2>{{ state.selectedFlight?.flightNumber || 'Choose a flight first' }}</h2>
+        </div>
+        <button type="button" class="ghost-button" (click)="state.loadAvailableSeats()" [disabled]="!state.selectedFlight">
+          Refresh seats
+        </button>
+      </div>
+
+      <div class="summary-list" *ngIf="state.selectedFlight; else noFlight">
+        <div class="summary-row">
+          <span>Route</span>
+          <strong>{{ state.selectedFlight.originAirportCode }} → {{ state.selectedFlight.destinationAirportCode }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Departure</span>
+          <strong>{{ state.selectedFlight.departureTime | date:'medium' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Aircraft</span>
+          <strong>{{ state.selectedFlight.aircraftType }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Base fare</span>
+          <strong>{{ state.selectedFlight.basePrice | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+      </div>
+
+      <ng-template #noFlight>
+        <p class="muted-copy">Your live booking summary will appear here as soon as you select a flight from search.</p>
+      </ng-template>
+
+      <div class="booking-form-grid">
+        <label>
+          Trip type
+          <select [(ngModel)]="state.bookingData.tripType">
+            <option *ngFor="let item of state.tripTypes" [value]="item">{{ item }}</option>
+          </select>
+        </label>
+        <label>
+          Payment mode
+          <select [(ngModel)]="state.bookingData.paymentMode">
+            <option *ngFor="let item of state.paymentModes" [value]="item">{{ item }}</option>
+          </select>
+        </label>
+        <label>
+          Meal preference
+          <input [(ngModel)]="state.bookingData.mealPreference" placeholder="VEG / NON_VEG" />
+        </label>
+        <label>
+          Luggage (kg)
+          <input type="number" [(ngModel)]="state.bookingData.luggageKg" (change)="state.calculateFare()" />
+        </label>
+        <label>
+          Contact email
+          <input [(ngModel)]="state.bookingData.contactEmail" />
+        </label>
+        <label>
+          Contact phone
+          <input [(ngModel)]="state.bookingData.contactPhone" />
+        </label>
+      </div>
+
+      <div class="fare-summary-box" *ngIf="state.fareSummary">
+        <h3>Fare summary</h3>
+        <div class="summary-row">
+          <span>Base fare</span>
+          <strong>{{ state.fareSummary.baseFare | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>GST</span>
+          <strong>{{ state.fareSummary.gstAmount | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Fuel surcharge</span>
+          <strong>{{ state.fareSummary.fuelSurcharge | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Ancillaries</span>
+          <strong>{{ state.fareSummary.ancillaryAmount | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div class="summary-row emphasis">
+          <span>Total</span>
+          <strong>{{ state.fareSummary.totalFare | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+      </div>
+    </article>
+
+    <article class="surface-card seat-planner-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Seat Planner</p>
+          <h2>Select one seat per traveller</h2>
+        </div>
+      </div>
+
+      <div class="traveller-tabs">
+        <button
+          type="button"
+          *ngFor="let passenger of state.passengerForms; let i = index"
+          class="traveller-pill"
+          [class.active]="state.activePassengerIndex === i"
+          (click)="state.setActivePassenger(i)"
+        >
+          Traveller {{ i + 1 }}
+          <span>{{ state.selectedSeats[i]?.seatNumber || 'Seat pending' }}</span>
+        </button>
+      </div>
+
+      <div class="seat-grid" *ngIf="state.availableSeats.length; else noSeats">
+        <button
+          type="button"
+          *ngFor="let seat of state.availableSeats"
+          class="seat-tile"
+          [class.selected]="state.selectedSeats[state.activePassengerIndex]?.seatId === seat.seatId"
+          [class.locked]="state.isSeatTakenByOtherPassenger(seat.seatId)"
+          [disabled]="state.isSeatTakenByOtherPassenger(seat.seatId)"
+          (click)="state.assignSeat(seat)"
+        >
+          <strong>{{ seat.seatNumber }}</strong>
+          <span>{{ seat.seatClass }}</span>
+        </button>
+      </div>
+
+      <ng-template #noSeats>
+        <div class="empty-surface slim">
+          <h3>No seats loaded</h3>
+          <p>Available seats will appear here as soon as you select a flight.</p>
+        </div>
+      </ng-template>
+
+      <div class="selection-board">
+        <div class="selection-card" *ngFor="let seat of state.selectedSeats; let i = index">
+          <span>Traveller {{ i + 1 }}</span>
+          <strong>{{ seat?.seatNumber || 'Seat not assigned' }}</strong>
+        </div>
+      </div>
+
+      <button type="button" class="primary-button wide" (click)="state.continueToPassenger()" [disabled]="!state.selectedFlight">
+        Continue to traveller details
+      </button>
+    </article>
+  </div>
+</section>

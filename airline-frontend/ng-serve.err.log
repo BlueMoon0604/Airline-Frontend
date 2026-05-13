@@ -1,0 +1,28 @@
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'resolveAirportCode' does not exist on type 'AppStateService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/app-state.service.ts:458:35:
+[37m      458 │ ...ginAirportCode = this.[32mresolveAirportCode[37m(this.searchData.origi...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'resolveAirportCode' does not exist on type 'AppStateService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/app-state.service.ts:459:40:
+[37m      459 │ ...ionAirportCode = this.[32mresolveAirportCode[37m(this.searchData.desti...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'resolveAirportCode' does not exist on type 'AppStateService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/app-state.service.ts:458:35:
+[37m      458 │ ...ginAirportCode = this.[32mresolveAirportCode[37m(this.searchData.origi...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'resolveAirportCode' does not exist on type 'AppStateService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/app-state.service.ts:459:40:
+[37m      459 │ ...ionAirportCode = this.[32mresolveAirportCode[37m(this.searchData.desti...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

@@ -1,0 +1,93 @@
+<div class="app-shell" [class.app-shell--immersive]="isImmersiveLayout">
+  <header class="app-header" *ngIf="showAppHeader">
+    <div class="app-header__row">
+      <a routerLink="/" class="brand brand--hero">
+        <div class="brand-mark">SB</div>
+        <div class="brand-copy">
+          <p>Search. Book. Fly. Effortlessly.</p>
+          <strong>SkyBooker</strong>
+        </div>
+      </a>
+
+      <nav class="nav-links">
+        <a
+          *ngFor="let item of visibleNavItems"
+          [routerLink]="item.label === 'My Trips' && !state.loggedIn ? '/auth' : item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+        >
+          {{ item.label }}
+        </a>
+
+        <a
+          *ngIf="showAdminNavLink; else staffOrExplore"
+          routerLink="/admin"
+          routerLinkActive="active"
+          class="nav-admin-link"
+        >
+          Admin
+        </a>
+
+        <ng-template #staffOrExplore>
+          <a
+            *ngIf="showStaffNavLink; else exploreDropdown"
+            routerLink="/staff"
+            routerLinkActive="active"
+            class="nav-admin-link"
+          >
+            Staff
+          </a>
+        </ng-template>
+
+        <ng-template #exploreDropdown>
+          <details class="nav-dropdown" *ngIf="visibleExploreItems.length">
+            <summary>More</summary>
+            <div class="nav-dropdown__menu">
+              <a *ngFor="let item of visibleExploreItems" [routerLink]="item.path">{{ item.label }}</a>
+            </div>
+          </details>
+        </ng-template>
+      </nav>
+
+      <div class="app-header__actions">
+        <div class="header-pill">
+          <span class="header-pill__avatar">24/7</span>
+          <span>Help</span>
+          <strong>+91 523-125-1578</strong>
+        </div>
+
+        <a [routerLink]="state.loggedIn ? '/account' : '/auth'" class="auth-link">
+          <ng-container *ngIf="state.loggedIn; else loggedOutAccount">
+            <span class="auth-link__icon">●</span>
+            <span class="auth-link__copy">
+              <small>Signed in</small>
+              <strong>{{ state.accountDisplayName }}</strong>
+            </span>
+          </ng-container>
+          <ng-template #loggedOutAccount>
+            <span class="auth-link__copy auth-link__copy--single">
+              <strong>My Account</strong>
+            </span>
+          </ng-template>
+        </a>
+
+        <button *ngIf="state.loggedIn" type="button" class="logout-link" (click)="state.logout()">
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <router-outlet></router-outlet>
+
+  <div class="toast" *ngIf="state.message">{{ state.message }}</div>
+  <div
+    class="loading"
+    *ngIf="viewReady
+      && state.loading
+      && !(currentUrl === '/search' && state.loadingLabel === 'Searching flights')
+      && !(currentUrl === '/account' && state.loadingLabel === 'Updating profile')
+      && !(currentUrl === '/staff' && state.loadingLabel === 'Loading passenger manifest')"
+  >{{ state.loadingLabel }}...</div>
+</div>
+

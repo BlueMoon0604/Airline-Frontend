@@ -1,0 +1,104 @@
+<section class="inner-page-shell success-page">
+  <div class="inner-hero">
+    <div class="success-hero-copy">
+      <div class="success-orb" aria-hidden="true">
+        <span>✓</span>
+      </div>
+      <p class="eyebrow">Booking Confirmed</p>
+      <h1>Thank you for booking with us.</h1>
+      <p>
+        Your payment was successful and your trip is now confirmed. We have prepared your travel documents and sent them to
+        <strong>{{ state.bookingData.contactEmail || state.profileEmailDisplay }}</strong>.
+      </p>
+    </div>
+
+    <div class="hero-stat-grid compact">
+      <div class="hero-stat">
+        <span>{{ state.bookingResult?.pnrCode || '-' }}</span>
+        <small>PNR code</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.paymentResult?.status || state.paymentStatus || 'PAID' }}</span>
+        <small>Payment state</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.bookedPassengers.length }}</span>
+        <small>Passengers</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid payment-layout">
+    <article class="surface-card success-summary-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Trip Summary</p>
+          <h2>{{ state.bookingResult?.pnrCode || 'Booking confirmed' }}</h2>
+        </div>
+      </div>
+
+      <ul class="summary-list">
+        <li>
+          <span>Booking ID</span>
+          <strong class="summary-value code-value">{{ state.bookingResult?.bookingId || '-' }}</strong>
+        </li>
+        <li>
+          <span>Flight</span>
+          <strong class="summary-value">{{ state.selectedFlight?.flightNumber || '-' }}</strong>
+        </li>
+        <li>
+          <span>Total fare</span>
+          <strong class="summary-value">{{ (state.paymentResult?.amount || state.fareSummary?.totalFare) | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </li>
+        <li>
+          <span>Email sent to</span>
+          <strong class="summary-value">{{ state.bookingData.contactEmail || state.profileEmailDisplay }}</strong>
+        </li>
+      </ul>
+
+      <div class="button-row">
+        <a routerLink="/account" class="primary-button success-link">Go to My Trips</a>
+        <a routerLink="/search" class="ghost-button success-link">Search another flight</a>
+      </div>
+    </article>
+
+    <article class="surface-card success-docs-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Travel Documents</p>
+          <h2>Download everything</h2>
+        </div>
+      </div>
+
+      <div class="button-cluster">
+        <button
+          type="button"
+          class="ghost-button wide"
+          (click)="state.downloadDocument(state.receiptDocument, 'receipt.pdf')"
+          [disabled]="!state.receiptReady"
+        >
+          {{ state.receiptLabel }}
+        </button>
+
+        <button
+          type="button"
+          class="ghost-button wide"
+          (click)="state.downloadDocument(state.eticketDocument, 'eticket.pdf')"
+          [disabled]="!state.eticketReady"
+        >
+          {{ state.eticketLabel }}
+        </button>
+
+        <button
+          type="button"
+          class="ghost-button wide"
+          *ngFor="let passenger of state.bookedPassengers"
+          (click)="state.downloadDocument(state.boardingPassDocuments[passenger.passengerId], passenger.firstName + '-boarding-pass.pdf')"
+          [disabled]="!state.getBoardingPassReady(passenger.passengerId)"
+        >
+          {{ state.getBoardingPassLabel(passenger) }}
+        </button>
+      </div>
+    </article>
+  </div>
+</section>

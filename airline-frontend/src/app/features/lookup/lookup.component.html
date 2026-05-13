@@ -1,0 +1,84 @@
+<section class="inner-page-shell lookup-page">
+  <div class="inner-hero compact">
+    <div>
+      <p class="eyebrow">PNR Lookup</p>
+      <h1>Retrieve a booking without digging through your account.</h1>
+      <p>This screen is built directly around the case study requirement for booking retrieval by PNR.</p>
+    </div>
+    <div class="hero-stat-grid compact">
+      <div class="hero-stat">
+        <span>{{ state.lookupResult?.pnrCode || '------' }}</span>
+        <small>Current PNR</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.lookupResult?.status || 'NA' }}</span>
+        <small>Booking status</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.lookupPayment?.status || 'NA' }}</span>
+        <small>Payment status</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid">
+    <article class="surface-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Lookup Form</p>
+          <h2>Find booking by PNR</h2>
+        </div>
+      </div>
+
+      <div class="booking-form-grid">
+        <label>
+          PNR code
+          <input [(ngModel)]="state.lookupData.pnrCode" placeholder="ABC123" />
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="primary-button" (click)="state.lookupBookingByPnr()">Lookup booking</button>
+        <button type="button" class="secondary-button" (click)="state.cancelCurrentBooking()" [disabled]="!state.lookupResult?.bookingId">
+          Cancel booking
+        </button>
+      </div>
+    </article>
+
+    <article class="surface-card" *ngIf="state.lookupResult; else noLookup">
+      <p class="section-tag">Result</p>
+      <h2>{{ state.lookupResult.pnrCode }}</h2>
+
+      <ul class="summary-list">
+        <li>
+          <span>Booking ID</span>
+          <strong>{{ state.lookupResult.bookingId }}</strong>
+        </li>
+        <li>
+          <span>Status</span>
+          <strong>{{ state.lookupResult.status }}</strong>
+        </li>
+        <li>
+          <span>Total fare</span>
+          <strong>{{ state.lookupResult.totalFare | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </li>
+      </ul>
+
+      <div class="button-cluster">
+        <button type="button" class="ghost-button wide" (click)="state.openBookingWorkspace(state.lookupResult)">
+          Open booking workspace
+        </button>
+        <button type="button" class="ghost-button wide" (click)="state.loadEticket()">
+          Load e-ticket
+        </button>
+      </div>
+    </article>
+
+    <ng-template #noLookup>
+      <article class="surface-card empty-surface">
+        <h3>No booking loaded</h3>
+        <p>Enter a PNR above to retrieve booking details, status, and payment context.</p>
+      </article>
+    </ng-template>
+  </div>
+</section>
