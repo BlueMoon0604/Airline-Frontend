@@ -1,0 +1,404 @@
+<section class="inner-page-shell admin-page">
+    <div class="inner-hero compact">
+    <div>
+      <p class="eyebrow">Platform Admin</p>
+      <h1>Manage users, airlines, airports, bookings, and platform controls from one desk.</h1>
+      <p>This admin dashboard follows the case study flow for governance, analytics, payments, refunds, and broadcast actions.</p>
+    </div>
+    <div class="hero-stat-grid compact">
+      <div class="hero-stat">
+        <span>{{ state.adminUsers.length }}</span>
+        <small>Users</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.adminBookings.length }}</span>
+        <small>Bookings</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.adminRevenueDisplay | currency:'INR':'symbol':'1.0-0' }}</span>
+        <small>Revenue</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid admin-layout-top">
+    <article class="surface-card admin-revenue-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Revenue Report</p>
+          <h2>Platform financial window</h2>
+        </div>
+        
+      </div>
+
+      <div class="booking-form-grid">
+        <label>
+          From
+          <input [(ngModel)]="state.adminRange.from" placeholder="2026-01-01T00:00:00" />
+        </label>
+        <label>
+          To
+          <input [(ngModel)]="state.adminRange.to" placeholder="2026-12-31T23:59:59" />
+        </label>
+      </div>
+
+      <div class="mini-info-card">
+        <strong>Live platform sync</strong>
+        <p>Revenue, master data, bookings, payments, and notifications refresh automatically while you stay on this dashboard.</p>
+      </div>
+
+      <div class="admin-insight-grid">
+        <div class="mini-info-card">
+          <strong>Total revenue</strong>
+          <p>{{ state.adminRevenueDisplay | currency:'INR':'symbol':'1.0-0' }}</p>
+        </div>
+        <div class="mini-info-card">
+          <strong>Suspended users</strong>
+          <p>{{ state.adminSuspendedUsersCount }}</p>
+        </div>
+        <div class="mini-info-card">
+          <strong>Payment records</strong>
+          <p>{{ state.adminDisplayedPayments.length }}</p>
+        </div>
+      </div>
+
+      <div class="admin-analytics-board">
+        <div class="admin-analytics-card">
+          <strong>Popular routes</strong>
+          <div class="admin-bullet-list">
+            <span *ngFor="let route of state.adminPopularRoutes">{{ route.label }}<small>{{ route.value }}</small></span>
+          </div>
+        </div>
+
+        <div class="admin-analytics-card">
+          <strong>Busiest airports</strong>
+          <div class="admin-bullet-list">
+            <span *ngFor="let airport of state.adminBusiestAirports">{{ airport.label }}<small>{{ airport.value }}</small></span>
+          </div>
+        </div>
+
+        <div class="admin-analytics-card">
+          <strong>Airline performance</strong>
+          <div class="admin-bullet-list">
+            <span *ngFor="let airline of state.adminAirlinePerformance">{{ airline.label }}<small>{{ airline.value }}</small></span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="surface-card quick-actions-card admin-broadcast-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Broadcast</p>
+          <h2>Send platform notification</h2>
+        </div>
+      </div>
+
+      <div class="booking-form-grid">
+        <label>
+          Audience
+          <select [(ngModel)]="state.adminBroadcastData.targetRole">
+            <option value="ALL">All users</option>
+            <option value="PASSENGER">Passengers</option>
+            <option value="AIRLINE_STAFF">Airline staff</option>
+            <option value="ADMIN">Admins</option>
+          </select>
+        </label>
+        <label>
+          Channel
+          <select [(ngModel)]="state.adminBroadcastData.channel">
+            <option *ngFor="let channel of state.notificationChannels" [value]="channel">{{ channel }}</option>
+          </select>
+        </label>
+        <label>
+          Type
+          <select [(ngModel)]="state.adminBroadcastData.type">
+            <option *ngFor="let type of state.notificationTypes" [value]="type">{{ type }}</option>
+          </select>
+        </label>
+        <label>
+          Title
+          <input [(ngModel)]="state.adminBroadcastData.title" placeholder="Service advisory" />
+        </label>
+      </div>
+
+      <label>
+        Message
+        <textarea rows="5" [(ngModel)]="state.adminBroadcastData.message" placeholder="Write the platform-wide alert here"></textarea>
+      </label>
+
+      <button type="button" class="primary-button wide" (click)="state.sendAdminBroadcast()">Send broadcast</button>
+
+      <div class="mini-info-card">
+        <strong>Recent platform activity</strong>
+        <div class="admin-activity-list" *ngIf="state.adminRecentActivity.length; else noActivity">
+          <div *ngFor="let item of state.adminRecentActivity" class="admin-activity-item">
+            <strong>{{ item.title }}</strong>
+            <span>{{ item.detail }}</span>
+            <small>{{ item.at | date:'medium' }}</small>
+          </div>
+        </div>
+        <ng-template #noActivity>
+          <p>No admin actions recorded yet.</p>
+        </ng-template>
+      </div>
+    </article>
+  </div>
+
+  <article class="surface-card admin-users-card">
+    <div class="card-heading">
+      <div>
+        <p class="section-tag">Manage All Users</p>
+        <h2>View, suspend, reactivate, or delete any account</h2>
+      </div>
+      
+    </div>
+
+    <div class="booking-form-grid">
+      <label>
+        Search user
+        <input [(ngModel)]="state.adminUserSearch" placeholder="Name or email" />
+      </label>
+      <label>
+        Role filter
+        <select [(ngModel)]="state.adminUserRoleFilter">
+          <option value="">All roles</option>
+          <option value="PASSENGER">Passenger</option>
+          <option value="AIRLINE_STAFF">Airline Staff</option>
+          <option value="ADMIN">Admin</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="admin-card-grid" *ngIf="state.visibleAdminUsers.length; else noUsers">
+      <article class="admin-list-card" *ngFor="let user of state.visibleAdminUsers">
+        <div class="flight-topline">
+          <div>
+            <p class="tiny-label">{{ user.role || 'USER' }}</p>
+            <h3>{{ user.fullName || user.email }}</h3>
+          </div>
+          <span class="status-pill" [class.subtle]="user.active === false">{{ user.active === false ? 'SUSPENDED' : 'ACTIVE' }}</span>
+        </div>
+        <small>{{ user.email }}</small>
+        <small>{{ user.phone || 'No phone' }}</small>
+        <div class="button-row admin-inline-actions">
+          <button type="button" class="secondary-button" *ngIf="user.active !== false" (click)="state.toggleAdminUserActive(user, false)">Suspend</button>
+          <button type="button" class="secondary-button" *ngIf="user.active === false" (click)="state.toggleAdminUserActive(user, true)">Reactivate</button>
+          <button type="button" class="ghost-button" (click)="state.deleteAdminUser(user)">Delete</button>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #noUsers>
+      <div class="empty-surface slim">
+        <h3>No users match the current filter</h3>
+        <p>Try a different search term or role.</p>
+      </div>
+    </ng-template>
+  </article>
+
+  <div class="page-grid admin-master-grid">
+    <article class="surface-card admin-master-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Manage Airlines</p>
+          <h2>Create, edit, activate, and deactivate airline profiles</h2>
+        </div>
+      </div>
+
+      <div class="booking-form-grid">
+        <label>
+          Airline name
+          <input [(ngModel)]="state.adminAirlineForm.name" placeholder="Airline name" />
+        </label>
+        <label>
+          IATA code
+          <input [(ngModel)]="state.adminAirlineForm.iataCode" placeholder="AI" />
+        </label>
+        <label>
+          ICAO code
+          <input [(ngModel)]="state.adminAirlineForm.icaoCode" placeholder="AIC" />
+        </label>
+        <label>
+          Country
+          <input [(ngModel)]="state.adminAirlineForm.country" placeholder="India" />
+        </label>
+        <label>
+          Logo URL
+          <input [(ngModel)]="state.adminAirlineForm.logoUrl" placeholder="https://..." />
+        </label>
+        <label>
+          Contact email
+          <input [(ngModel)]="state.adminAirlineForm.contactEmail" placeholder="ops@airline.com" />
+        </label>
+        <label>
+          Contact phone
+          <input [(ngModel)]="state.adminAirlineForm.contactPhone" placeholder="+91 ..." />
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="primary-button" (click)="state.saveAdminAirline()">{{ state.adminAirlineForm.airlineId ? 'Update airline' : 'Create airline' }}</button>
+        <button type="button" class="ghost-button" (click)="state.resetAdminAirlineForm()">Reset</button>
+      </div>
+
+      <div class="admin-card-grid compact-grid">
+        <article class="admin-list-card" *ngFor="let airline of state.airlines">
+          <div class="flight-topline">
+            <div>
+              <p class="tiny-label">{{ airline.iataCode }}{{ airline.icaoCode ? ' · ' + airline.icaoCode : '' }}</p>
+              <h3>{{ airline.name }}</h3>
+            </div>
+            <span class="status-pill" [class.subtle]="airline.isActive === false">{{ airline.isActive === false ? 'INACTIVE' : 'ACTIVE' }}</span>
+          </div>
+          <small>{{ airline.country }}</small>
+          <small>{{ airline.contactEmail || 'No contact email' }}</small>
+          <div class="button-row admin-inline-actions">
+            <button type="button" class="secondary-button" (click)="state.editAdminAirline(airline)">Edit</button>
+            <button type="button" class="ghost-button" *ngIf="airline.isActive !== false" (click)="state.deactivateAdminAirline(airline)">Deactivate</button>
+            <button type="button" class="ghost-button" *ngIf="airline.isActive === false" (click)="state.activateAdminAirline(airline)">Reactivate</button>
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <article class="surface-card admin-master-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Manage Airports</p>
+          <h2>Create and manage airport profiles</h2>
+        </div>
+      </div>
+
+      <div class="booking-form-grid">
+        <label>
+          Airport name
+          <input [(ngModel)]="state.adminAirportForm.name" placeholder="Kempegowda International Airport" />
+        </label>
+        <label>
+          IATA code
+          <input [(ngModel)]="state.adminAirportForm.iataCode" placeholder="BLR" />
+        </label>
+        <label>
+          ICAO code
+          <input [(ngModel)]="state.adminAirportForm.icaoCode" placeholder="VOBL" />
+        </label>
+        <label>
+          City
+          <input [(ngModel)]="state.adminAirportForm.city" placeholder="Bengaluru" />
+        </label>
+        <label>
+          Country
+          <input [(ngModel)]="state.adminAirportForm.country" placeholder="India" />
+        </label>
+        <label>
+          Timezone
+          <input [(ngModel)]="state.adminAirportForm.timezone" placeholder="Asia/Kolkata" />
+        </label>
+        <label>
+          Latitude
+          <input [(ngModel)]="state.adminAirportForm.latitude" placeholder="13.1986" />
+        </label>
+        <label>
+          Longitude
+          <input [(ngModel)]="state.adminAirportForm.longitude" placeholder="77.7066" />
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="primary-button" (click)="state.saveAdminAirport()">{{ state.adminAirportForm.airportId ? 'Update airport' : 'Create airport' }}</button>
+        <button type="button" class="ghost-button" (click)="state.resetAdminAirportForm()">Reset</button>
+      </div>
+
+      <div class="admin-card-grid compact-grid">
+        <article class="admin-list-card" *ngFor="let airport of state.airports">
+          <div class="flight-topline">
+            <div>
+              <p class="tiny-label">{{ airport.iataCode }}{{ airport.icaoCode ? ' · ' + airport.icaoCode : '' }}</p>
+              <h3>{{ airport.city }}</h3>
+            </div>
+            <span class="status-pill subtle">{{ airport.country }}</span>
+          </div>
+          <small>{{ airport.name }}</small>
+          <small>{{ airport.timezone }}</small>
+          <div class="button-row admin-inline-actions">
+            <button type="button" class="secondary-button" (click)="state.editAdminAirport(airport)">Edit</button>
+          </div>
+        </article>
+      </div>
+    </article>
+  </div>
+
+  <article class="surface-card admin-bookings-card">
+    <div class="card-heading">
+      <div>
+        <p class="section-tag">View All Bookings</p>
+        <h2>Monitor booking lifecycle and payment status platform-wide</h2>
+      </div>
+      
+    </div>
+
+    <div class="booking-form-grid">
+      <label>
+        Status filter
+        <select [(ngModel)]="state.adminBookingStatusFilter">
+          <option value="">All booking statuses</option>
+          <option *ngFor="let status of state.bookingStatuses" [value]="status">{{ status }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="admin-card-grid" *ngIf="state.visibleAdminBookings.length; else noBookings">
+      <article class="admin-list-card booking-monitor-card" *ngFor="let booking of state.visibleAdminBookings">
+        <div class="flight-topline">
+          <div>
+            <p class="tiny-label">PNR</p>
+            <h3>{{ booking.pnrCode }}</h3>
+          </div>
+          <span class="status-pill" [class.subtle]="booking.status !== 'CONFIRMED'">{{ booking.status }}</span>
+        </div>
+
+        <div class="summary-list admin-summary-list">
+          <div class="summary-row">
+            <span>Route</span>
+            <strong>{{ state.getFlightRouteForBooking(booking) }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Airline</span>
+            <strong>{{ state.getAirlineNameByFlight(booking) }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Payment</span>
+            <strong>{{ state.getAdminPaymentForBooking(booking.bookingId)?.status || 'Not created' }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Total fare</span>
+            <strong>{{ booking.totalFare | currency:'INR':'symbol':'1.0-0' }}</strong>
+          </div>
+        </div>
+
+        <div class="button-row admin-inline-actions admin-inline-actions--wrap">
+          <button type="button" class="primary-button" (click)="state.openBookingWorkspace(booking)">Open workspace</button>
+          <button type="button" class="secondary-button" *ngIf="booking.status !== 'CANCELLED'" (click)="state.cancelAdminBooking(booking)">Cancel booking</button>
+          <button
+            type="button"
+            class="ghost-button"
+            *ngIf="state.getAdminPaymentForBooking(booking.bookingId)?.status === 'PAID'"
+            (click)="state.requestAdminRefundForBooking(booking)"
+          >Refund full amount</button>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #noBookings>
+      <div class="empty-surface slim">
+        <h3>No bookings available for this filter</h3>
+        <p>Try another status. Platform bookings refresh automatically on this dashboard.</p>
+      </div>
+    </ng-template>
+  </article>
+</section>
+
+
+
+

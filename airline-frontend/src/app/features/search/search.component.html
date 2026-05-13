@@ -1,0 +1,276 @@
+<section class="inner-page-shell search-page">
+  <div class="inner-hero">
+    <div>
+      <p class="eyebrow">Flight Discovery</p>
+      <h1>Find the right flight in a polished, fast booking flow.</h1>
+      <p>
+        Search real routes from your backend, compare departure times, then move straight into seat selection and booking.
+      </p>
+    </div>
+
+    <div class="hero-stat-grid">
+      <div class="hero-stat">
+        <span>{{ state.airports.length || '0' }}</span>
+        <small>Airports loaded</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.airlines.length || '0' }}</span>
+        <small>Airlines loaded</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.displayedFlightCount || '0' }}</span>
+        <small>Flights found</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid">
+    <article class="surface-card search-panel">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Search Form</p>
+          <h2>Plan your route</h2>
+        </div>
+        <button type="button" class="ghost-button" (click)="state.loadReferenceData()" [disabled]="state.loading">
+          Refresh airports
+        </button>
+      </div>
+
+      <div class="trip-toggle">
+        <button type="button" class="trip-pill" [class.active]="!state.searchData.isRoundTrip" (click)="state.setTripMode(false)">
+          One way
+        </button>
+        <button type="button" class="trip-pill" [class.active]="state.searchData.isRoundTrip" (click)="state.setTripMode(true)">
+          Round trip
+        </button>
+      </div>
+
+      <div class="search-form-grid">
+        <label>
+          From city
+          <input list="airport-options" [(ngModel)]="state.searchData.originAirportCode" placeholder="Enter city 1" />
+        </label>
+        <label>
+          To city
+          <input list="airport-options" [(ngModel)]="state.searchData.destinationAirportCode" placeholder="Enter city 2" />
+        </label>
+        <label>
+          Departure date
+          <input type="date" [(ngModel)]="state.searchData.departureDate" />
+        </label>
+        <label *ngIf="state.searchData.isRoundTrip">
+          Return date
+          <input type="date" [(ngModel)]="state.searchData.returnDate" />
+        </label>
+        <label>
+          Travellers
+          <input
+            type="number"
+            min="1"
+            max="6"
+            [ngModel]="state.searchData.passengers"
+            (ngModelChange)="state.setPassengerCount(+$event)"
+          />
+        </label>
+      </div>
+
+      <datalist id="airport-options">
+        <option *ngFor="let airport of state.airports" [value]="airport.city">
+          {{ airport.city }}
+        </option>
+      </datalist>
+
+      <button type="button" class="primary-button wide" (click)="state.searchFlights()" [disabled]="state.loading">
+        {{ state.loading && state.loadingLabel === 'Searching flights' ? 'Searching fares...' : 'Search premium fares' }}
+      </button>
+
+      <p class="search-feedback" *ngIf="state.searchFeedback">
+        {{ state.searchFeedback }}
+      </p>
+    </article>
+
+    <article class="surface-card search-side-panel">
+      <p class="section-tag">Trip Snapshot</p>
+      <h3>Current search</h3>
+      <ul class="summary-list">
+        <li>
+          <span>Route</span>
+          <strong>{{ state.getAirportDisplayLabel(state.searchData.originAirportCode) }} → {{ state.getAirportDisplayLabel(state.searchData.destinationAirportCode) }}</strong>
+        </li>
+        <li>
+          <span>Departure</span>
+          <strong>{{ state.searchData.departureDate || 'Not selected' }}</strong>
+        </li>
+        <li *ngIf="state.searchData.isRoundTrip">
+          <span>Return</span>
+          <strong>{{ state.searchData.returnDate || 'Not selected' }}</strong>
+        </li>
+        <li>
+          <span>Passengers</span>
+          <strong>{{ state.searchData.passengers }}</strong>
+        </li>
+      </ul>
+
+      <div class="info-stack">
+        <div class="mini-info-card">
+          <strong>Smart next step</strong>
+          <p>Guests can search routes freely. Login is only required when you move into seat selection and booking.</p>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <section class="results-section" id="flight-filters-section">
+    <div class="section-title-row">
+      <div>
+        <p class="section-tag">Filters</p>
+        <h2>Tune the result set</h2>
+      </div>
+    </div>
+
+    <div class="surface-card filter-bar">
+      <div class="booking-form-grid">
+        <label>
+          Airline
+          <select [(ngModel)]="state.searchFilters.airlineId">
+            <option value="">All airlines</option>
+            <option *ngFor="let airline of state.airlines" [value]="airline.airlineId">{{ airline.name }}</option>
+          </select>
+        </label>
+        <label>
+          Max price
+          <input type="number" [(ngModel)]="state.searchFilters.maxPrice" placeholder="8000" />
+        </label>
+        <label>
+          Departure window
+          <select [(ngModel)]="state.searchFilters.departureWindow">
+            <option value="ANY">Any time</option>
+            <option value="MORNING">Morning</option>
+            <option value="AFTERNOON">Afternoon</option>
+            <option value="EVENING">Evening</option>
+            <option value="NIGHT">Night</option>
+          </select>
+        </label>
+        <label>
+          Sort by
+          <select [(ngModel)]="state.searchFilters.sortBy">
+            <option value="">Choose sort</option>
+            <option value="PRICE_ASC">Price low to high</option>
+            <option value="PRICE_DESC">Price high to low</option>
+            <option value="DEPARTURE_ASC">Departure earliest</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="results-section" id="outbound-flights-section">
+    <div class="section-title-row">
+      <div>
+        <p class="section-tag">Live Results</p>
+        <h2>Outbound flights</h2>
+      </div>
+      <span class="results-count">{{ state.visibleFlightResults.length }} options</span>
+    </div>
+
+    <div class="results-grid" *ngIf="state.visibleFlightResults.length; else noFlights">
+      <article class="flight-result-card" *ngFor="let flight of state.visibleFlightResults">
+        <div class="flight-topline">
+          <div>
+            <p class="tiny-label">Flight Number</p>
+            <h3>{{ flight.flightNumber }}</h3>
+          </div>
+          <span class="status-pill">{{ flight.status || 'ON_TIME' }}</span>
+        </div>
+
+        <div class="flight-route-band">
+          <div>
+            <strong>{{ flight.originAirportCode }}</strong>
+            <small>{{ flight.departureTime | date:'shortTime' }}</small>
+          </div>
+          <div class="route-line"></div>
+          <div class="route-duration">{{ flight.durationMinutes || '--' }} min</div>
+          <div class="route-line"></div>
+          <div>
+            <strong>{{ flight.destinationAirportCode }}</strong>
+            <small>{{ flight.arrivalTime | date:'shortTime' }}</small>
+          </div>
+        </div>
+
+        <div class="flight-meta-row">
+          <span>{{ flight.aircraftType || 'Aircraft pending' }}</span>
+          <span>{{ flight.availableSeats || 0 }} seats left</span>
+        </div>
+
+        <div class="flight-bottomline">
+          <div>
+            <p class="tiny-label">Starting from</p>
+            <strong class="fare-value">{{ flight.basePrice | currency:'INR':'symbol':'1.0-0' }}</strong>
+          </div>
+          <button type="button" class="primary-button" (click)="state.selectFlight(flight)">
+            Select flight
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #noFlights>
+      <div class="empty-surface">
+        <h3>{{ state.hasSearchedFlights ? 'No flights found' : 'No flights available yet' }}</h3>
+        <p>
+          {{ state.hasSearchedFlights
+            ? 'Try another route or date. Your backend search completed successfully, but no matching flights were returned.'
+            : 'All available backend flights will appear here. You can narrow them using the search form and filters above.' }}
+        </p>
+      </div>
+    </ng-template>
+  </section>
+
+  <section class="results-section" *ngIf="state.returnFlightResults.length">
+    <div class="section-title-row">
+      <div>
+        <p class="section-tag">Return Leg</p>
+        <h2>Return options</h2>
+      </div>
+      <span class="results-count">{{ state.returnFlightResults.length }} options</span>
+    </div>
+
+    <div class="results-grid">
+      <article class="flight-result-card" *ngFor="let flight of state.returnFlightResults">
+        <div class="flight-topline">
+          <div>
+            <p class="tiny-label">Flight Number</p>
+            <h3>{{ flight.flightNumber }}</h3>
+          </div>
+          <span class="status-pill">{{ flight.status || 'ON_TIME' }}</span>
+        </div>
+
+        <div class="flight-route-band">
+          <div>
+            <strong>{{ flight.originAirportCode }}</strong>
+            <small>{{ flight.departureTime | date:'shortTime' }}</small>
+          </div>
+          <div class="route-line"></div>
+          <div class="route-duration">{{ flight.durationMinutes || '--' }} min</div>
+          <div class="route-line"></div>
+          <div>
+            <strong>{{ flight.destinationAirportCode }}</strong>
+            <small>{{ flight.arrivalTime | date:'shortTime' }}</small>
+          </div>
+        </div>
+
+        <div class="flight-bottomline">
+          <div>
+            <p class="tiny-label">Starting from</p>
+            <strong class="fare-value">{{ flight.basePrice | currency:'INR':'symbol':'1.0-0' }}</strong>
+          </div>
+          <button type="button" class="primary-button" (click)="state.selectFlight(flight)">
+            Use this leg
+          </button>
+        </div>
+      </article>
+    </div>
+  </section>
+</section>
+
+

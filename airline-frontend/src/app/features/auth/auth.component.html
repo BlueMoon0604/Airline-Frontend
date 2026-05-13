@@ -1,0 +1,103 @@
+<section class="auth-page">
+  <div class="auth-panel auth-panel--visual">
+    <div class="auth-copy">
+      <p class="eyebrow">Start your premium journey</p>
+      <h1>Sign in and unlock your next flight in style</h1>
+      <p>
+        Clean booking, polished itinerary flow, and a modern airline experience inspired by your chosen travel theme.
+      </p>
+
+      <div class="auth-benefits">
+        <span>Google OAuth ready</span>
+        <span>Flight, booking and payment flow</span>
+        <span>PDFs and email support</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel auth-panel--forms">
+    <div class="auth-heading">
+      <p class="eyebrow">Welcome to SkyBooker</p>
+      <h2>Login / Sign up</h2>
+      <span>Use your account to continue with flights, booking and payment.</span>
+    </div>
+
+    <div class="auth-form-grid">
+      <div class="auth-card">
+        <div class="auth-card__head">
+          <h3>Login</h3>
+          <button *ngIf="state.loggedIn" type="button" class="secondary auth-logout-button" (click)="state.logout()">Logout</button>
+        </div>
+
+        <label>
+          Email
+          <input type="email" autocomplete="email" [(ngModel)]="state.loginData.email" placeholder="you@example.com" />
+        </label>
+        <label>
+          Password
+          <input type="password" autocomplete="current-password" [(ngModel)]="state.loginData.password" placeholder="Enter password" />
+        </label>
+
+        <div class="auth-card__actions auth-card__actions--split">
+          <button type="button" class="primary-button wide" (click)="state.login()" [disabled]="state.loading">
+            {{ state.loading && state.loadingLabel === 'Logging in' ? 'Signing in...' : 'Sign in' }}
+          </button>
+          <button type="button" class="google-button" (click)="state.continueWithGoogle()" [disabled]="state.loading">
+            <span class="google-button__mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.2-.9 2.3-1.9 3l3.1 2.4c1.8-1.7 2.9-4.1 2.9-7 0-.7-.1-1.5-.2-2.2H12z"/>
+                <path fill="#34A853" d="M12 21c2.6 0 4.8-.9 6.4-2.4l-3.1-2.4c-.9.6-2 .9-3.3.9-2.5 0-4.6-1.7-5.4-3.9H3.4v2.5C5 18.9 8.2 21 12 21z"/>
+                <path fill="#4A90E2" d="M6.6 13.2c-.2-.6-.3-1.2-.3-1.9s.1-1.3.3-1.9V6.9H3.4C2.5 8.5 2 10.2 2 11.9s.5 3.4 1.4 5l3.2-3.7z"/>
+                <path fill="#FBBC05" d="M12 6.7c1.4 0 2.7.5 3.7 1.4l2.8-2.8C16.8 3.7 14.6 3 12 3 8.2 3 5 5.1 3.4 8.3l3.2 2.5c.8-2.3 2.9-4.1 5.4-4.1z"/>
+              </svg>
+            </span>
+            <span>Continue with Google</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-card__head">
+          <h3>Create account</h3>
+        </div>
+
+        <div class="auth-input-grid">
+          <label>
+            Full name
+            <input [(ngModel)]="state.registerData.fullName" placeholder="Your name" />
+          </label>
+          <label>
+            Email
+            <input type="email" autocomplete="email" [(ngModel)]="state.registerData.email" placeholder="you@example.com" />
+          </label>
+          <label>
+            Password
+            <input type="password" autocomplete="new-password" [(ngModel)]="state.registerData.password" placeholder="Create password" />
+          </label>
+          <label>
+            Confirm password
+            <input type="password" autocomplete="new-password" [(ngModel)]="state.registerConfirmPassword" placeholder="Confirm password" />
+          </label>
+          <small class="field-hint full-span">Use at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit.</small>
+          <label>
+            Phone
+            <input type="tel" autocomplete="tel" [(ngModel)]="state.registerData.phone" placeholder="+91..." />
+          </label>
+          <label>
+            Passport <span class="optional-label">optional</span>
+            <input [(ngModel)]="state.registerData.passportNumber" placeholder="N1234567" />
+          </label>
+          <label>
+            Nationality
+            <input [(ngModel)]="state.registerData.nationality" placeholder="Nationality" />
+          </label>
+        </div>
+
+        <button type="button" class="primary-button wide auth-create-button" (click)="state.register()" [disabled]="state.loading">
+          {{ state.loading && state.loadingLabel === 'Creating account' ? 'Creating account...' : 'Create account' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+

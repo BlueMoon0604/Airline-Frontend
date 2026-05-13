@@ -1,0 +1,147 @@
+<section class="inner-page-shell payment-page">
+  <div class="inner-hero compact">
+    <div>
+      <p class="eyebrow">Payment & Documents</p>
+      <h1>Drive the final confirmation and surface all travel documents beautifully.</h1>
+      <p>Complete your checkout with Razorpay and the same backend flow will confirm booking, seats, notifications, and PDFs.</p>
+    </div>
+    <div class="hero-stat-grid compact">
+      <div class="hero-stat">
+        <span>{{ state.paymentResult?.status || state.paymentStatus || 'PENDING' }}</span>
+        <small>Payment state</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.bookingDetails?.status || state.bookingResult?.status || 'PENDING' }}</span>
+        <small>Booking state</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.bookedPassengers.length }}</span>
+        <small>Passengers</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid payment-layout">
+    <article class="surface-card payment-summary-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Booking Summary</p>
+          <h2>{{ state.bookingResult?.pnrCode || 'Booking pending' }}</h2>
+        </div>
+
+      </div>
+
+      <ul class="summary-list">
+        <li>
+          <span>Booking ID</span>
+          <strong>{{ state.bookingResult?.bookingId || '-' }}</strong>
+        </li>
+        <li>
+          <span>Flight</span>
+          <strong>{{ state.selectedFlight?.flightNumber || '-' }}</strong>
+        </li>
+        <li>
+          <span>Contact</span>
+          <strong>{{ state.bookingData.contactEmail || '-' }}</strong>
+        </li>
+        <li>
+          <span>Total fare</span>
+          <strong>{{ (state.paymentResult?.amount || state.fareSummary?.totalFare) | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </li>
+      </ul>
+
+      <div class="info-stack">
+        <div class="mini-info-card">
+          <strong>Payment mode</strong>
+          <p>{{ state.paymentResult?.paymentMode || state.bookingData.paymentMode }}</p>
+        </div>
+        <div class="mini-info-card">
+          <strong>Order reference</strong>
+          <p>{{ state.paymentResult?.gatewayOrderId || 'Will appear after payment load' }}</p>
+        </div>
+      </div>
+
+      <div class="button-row">
+
+        <button type="button" class="secondary-button" (click)="state.payWithRazorpay()" [disabled]="!state.canOpenRazorpayCheckout">
+          Pay with Razorpay
+        </button>
+      </div>
+
+      <div class="booking-form-grid" *ngIf="state.canRequestRefund">
+        <label>
+          Refund amount
+          <input type="number" [(ngModel)]="state.refundData.refundAmount" />
+        </label>
+      </div>
+
+      <button type="button" class="ghost-button wide" *ngIf="state.canRequestRefund" (click)="state.requestRefund()" [disabled]="!state.paymentResult?.paymentId">
+        Request refund
+      </button>
+    </article>
+
+    <article class="surface-card payment-actions-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Travel Documents</p>
+          <h2>Fetch and download PDFs</h2>
+        </div>
+      </div>
+
+      <div class="button-cluster">
+        <button type="button" class="ghost-button wide" (click)="state.loadReceipt()" [disabled]="!state.paymentResult?.paymentId">
+          Load receipt
+        </button>
+        <button type="button" class="ghost-button wide" (click)="state.loadEticket()" [disabled]="!state.bookingResult?.bookingId">
+          Load e-ticket
+        </button>
+        <button
+          type="button"
+          class="ghost-button wide"
+          *ngFor="let passenger of state.bookedPassengers"
+          (click)="state.loadBoardingPass(passenger)"
+        >
+          Boarding pass for {{ passenger.firstName }}
+        </button>
+      </div>
+
+      <div class="document-board">
+        <div class="document-card" *ngIf="state.receiptDocument">
+          <strong>{{ state.receiptDocument.fileName || 'receipt.pdf' }}</strong>
+          <button type="button" class="primary-button" (click)="state.downloadDocument(state.receiptDocument, 'receipt.pdf')">
+            Download receipt
+          </button>
+        </div>
+
+        <div class="document-card" *ngIf="state.eticketDocument">
+          <strong>{{ state.eticketDocument.fileName || 'eticket.pdf' }}</strong>
+          <button type="button" class="primary-button" (click)="state.downloadDocument(state.eticketDocument, 'eticket.pdf')">
+            Download e-ticket
+          </button>
+        </div>
+
+        <div class="document-card" *ngFor="let passenger of state.bookedPassengers">
+          <ng-container *ngIf="state.boardingPassDocuments[passenger.passengerId]">
+            <strong>{{ state.boardingPassDocuments[passenger.passengerId].fileName || (passenger.firstName + '-boarding-pass.pdf') }}</strong>
+            <button
+              type="button"
+              class="primary-button"
+              (click)="state.downloadDocument(state.boardingPassDocuments[passenger.passengerId], passenger.firstName + '-boarding-pass.pdf')"
+            >
+              Download boarding pass
+            </button>
+          </ng-container>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="secondary-button wide"
+        (click)="state.sendBookingConfirmationMail()"
+        [disabled]="!state.bookingResult?.bookingId"
+      >
+        Send booking confirmation email
+      </button>
+    </article>
+  </div>
+</section>

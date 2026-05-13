@@ -1,0 +1,378 @@
+<section class="inner-page-shell staff-page">
+  <div class="inner-hero compact">
+    <div>
+      <p class="eyebrow">Airline Ops</p>
+      <h1>Monitor flights, update status, configure seat maps, and operate every passenger touchpoint in real time.</h1>
+      <p>This staff dashboard keeps home, search, and trips intact while giving airline operators a focused control surface for schedules, seat inventory, manifests, alerts, and revenue.</p>
+    </div>
+    <div class="hero-stat-grid compact">
+      <div class="hero-stat">
+        <span>{{ state.visibleStaffFlights.length }}</span>
+        <small>Flights</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.staffManifestRows.length }}</span>
+        <small>Passengers</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.staffRevenueSummary?.seatUtilisationLabel || '0%' }}</span>
+        <small>Seat use</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid staff-top-grid">
+    <article class="surface-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Airline Context</p>
+          <h2>Link your operating airline</h2>
+        </div>
+        
+      </div>
+
+      <div class="booking-form-grid">
+        <label>
+          Approved airline
+          <select [(ngModel)]="state.staffData.airlineId" (ngModelChange)="state.selectStaffAirline($event)">
+            <option value="">Choose airline</option>
+            <option *ngFor="let airline of state.staffAirlines" [value]="airline.airlineId">
+              {{ airline.name }} · {{ airline.iataCode }}
+            </option>
+          </select>
+        </label>
+
+        <label>
+          Active flight workspace
+          <select [(ngModel)]="state.staffData.flightId" (ngModelChange)="state.selectStaffFlight($event)">
+            <option value="">Choose flight</option>
+            <option *ngFor="let flight of state.visibleStaffFlights" [value]="flight.flightId">
+              {{ flight.flightNumber }} · {{ state.getAirportDisplayLabel(flight.originAirportCode) }} → {{ state.getAirportDisplayLabel(flight.destinationAirportCode) }}
+            </option>
+          </select>
+        </label>
+      </div>
+
+      <div class="mini-info-card">
+        <strong>{{ state.staffLinkedAirlineName }}</strong>
+        <p>{{ state.staffSelectedFlightSummary }}</p>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="secondary-button" (click)="state.resetStaffFlightForm()">
+          New flight draft
+        </button>
+      </div>
+    </article>
+
+    <article class="surface-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Flight Revenue</p>
+          <h2>Selected flight snapshot</h2>
+        </div>
+      </div>
+
+      <div class="staff-kpi-grid">
+        <div class="mini-info-card">
+          <strong>{{ state.staffRevenueSummary?.bookingCount ?? 0 }}</strong>
+          <p>Bookings</p>
+        </div>
+        <div class="mini-info-card">
+          <strong>{{ (state.staffRevenueSummary?.revenue ?? 0) | currency:'INR':'symbol':'1.0-0' }}</strong>
+          <p>Total revenue</p>
+        </div>
+        <div class="mini-info-card">
+          <strong>{{ state.staffRevenueSummary?.seatUtilisationLabel || '0%' }}</strong>
+          <p>Seat utilisation</p>
+        </div>
+      </div>
+
+      <div class="notification-feed compact-feed" *ngIf="state.staffRevenueByClass.length; else noRevenueClasses">
+        <article class="notification-card slim" *ngFor="let item of state.staffRevenueByClass">
+          <strong>{{ item.label }}</strong>
+          <p>{{ item.seats }} seats</p>
+          <small>{{ item.revenue | currency:'INR':'symbol':'1.0-0' }}</small>
+        </article>
+      </div>
+
+      <ng-template #noRevenueClasses>
+        <div class="empty-surface slim">
+          <h3>No revenue breakdown yet</h3>
+          <p>Select a flight and load the workspace to calculate bookings, class mix, and seat usage.</p>
+        </div>
+      </ng-template>
+    </article>
+  </div>
+
+  <section class="results-section">
+    <div class="section-title-row">
+      <div>
+        <p class="section-tag">Schedule Desk</p>
+        <h2>Add or edit flight schedule</h2>
+      </div>
+    </div>
+
+    <article class="surface-card">
+      <div class="booking-form-grid">
+        <label>
+          Flight number
+          <input [(ngModel)]="state.staffFlightForm.flightNumber" placeholder="e.g. SB221" />
+        </label>
+
+        <label>
+          Airline
+          <select [(ngModel)]="state.staffFlightForm.airlineId">
+            <option value="">Choose airline</option>
+            <option *ngFor="let airline of state.staffAirlines" [value]="airline.airlineId">
+              {{ airline.name }} · {{ airline.iataCode }}
+            </option>
+          </select>
+        </label>
+
+        <label>
+          From city
+          <input [(ngModel)]="state.staffFlightForm.originAirportCode" placeholder="Delhi" />
+        </label>
+
+        <label>
+          To city
+          <input [(ngModel)]="state.staffFlightForm.destinationAirportCode" placeholder="Mumbai" />
+        </label>
+
+        <label>
+          Departure time
+          <input type="datetime-local" [(ngModel)]="state.staffFlightForm.departureTime" />
+        </label>
+
+        <label>
+          Arrival time
+          <input type="datetime-local" [(ngModel)]="state.staffFlightForm.arrivalTime" />
+        </label>
+
+        <label>
+          Aircraft type
+          <input [(ngModel)]="state.staffFlightForm.aircraftType" placeholder="Airbus A320" />
+        </label>
+
+        <label>
+          Total seats
+          <input type="number" min="1" [(ngModel)]="state.staffFlightForm.totalSeats" />
+        </label>
+
+        <label>
+          Base fare
+          <input type="number" min="0" [(ngModel)]="state.staffFlightForm.basePrice" />
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="primary-button" (click)="state.saveStaffFlightSchedule()">
+          {{ state.staffFlightForm.flightId ? 'Update flight' : 'Create flight' }}
+        </button>
+        <button type="button" class="secondary-button" (click)="state.resetStaffFlightForm()">Reset form</button>
+      </div>
+    </article>
+  </section>
+
+  <section class="results-section">
+    <div class="section-title-row">
+      <div>
+        <p class="section-tag">Flight Inventory</p>
+        <h2>Flights under this airline</h2>
+      </div>
+    </div>
+
+    <div class="results-grid" *ngIf="state.visibleStaffFlights.length; else noStaffFlights">
+      <article class="trip-card" *ngFor="let flight of state.visibleStaffFlights">
+        <div class="flight-topline">
+          <div>
+            <p class="tiny-label">Flight</p>
+            <h3>{{ flight.flightNumber }}</h3>
+          </div>
+          <span class="status-pill">{{ flight.status }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Route</span>
+          <strong>{{ state.getAirportDisplayLabel(flight.originAirportCode) }} → {{ state.getAirportDisplayLabel(flight.destinationAirportCode) }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Schedule</span>
+          <strong>{{ flight.departureTime | date:'dd MMM, h:mm a' }} → {{ flight.arrivalTime | date:'h:mm a' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Seats</span>
+          <strong>{{ flight.availableSeats ?? 0 }}/{{ flight.totalSeats ?? 0 }} available</strong>
+        </div>
+
+        <div class="button-row button-row--stacked">
+          <button type="button" class="primary-button wide" (click)="state.editStaffFlightSchedule(flight)">Edit schedule</button>
+          <button type="button" class="ghost-button wide" (click)="state.focusStaffFlight(flight)">Open workspace</button>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #noStaffFlights>
+      <div class="empty-surface">
+        <h3>No flights ready yet</h3>
+        <p>Link an airline first, then create or load schedules to manage status, seat maps, and passenger operations.</p>
+      </div>
+    </ng-template>
+  </section>
+
+  <div class="page-grid">
+    <article class="surface-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Status & Alerts</p>
+          <h2>Update flight status and notify passengers</h2>
+        </div>
+      </div>
+
+      <div class="booking-form-grid">
+        <label>
+          Flight status
+          <select [(ngModel)]="state.staffData.status">
+            <option *ngFor="let status of state.flightStatuses" [value]="status">{{ status }}</option>
+          </select>
+        </label>
+
+        <label>
+          Alert type
+          <select [(ngModel)]="state.staffAlertForm.type">
+            <option *ngFor="let type of state.staffAlertTypes" [value]="type">{{ type }}</option>
+          </select>
+        </label>
+
+        <label>
+          Delivery channel
+          <select [(ngModel)]="state.staffAlertForm.channel">
+            <option *ngFor="let channel of state.notificationChannels" [value]="channel">{{ channel }}</option>
+          </select>
+        </label>
+
+        <label>
+          Alert title
+          <input [(ngModel)]="state.staffAlertForm.title" placeholder="Delay update for SB221" />
+        </label>
+
+        <label class="full-span">
+          Alert message
+          <textarea rows="4" [(ngModel)]="state.staffAlertForm.message" placeholder="Your flight is delayed by 45 minutes. Updated boarding details will follow shortly."></textarea>
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="primary-button" (click)="state.updateFlightStatus()">Update status</button>
+        <button type="button" class="secondary-button" (click)="state.sendStaffFlightAlert()">Send alert</button>
+      </div>
+    </article>
+
+    <article class="surface-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Seat Map</p>
+          <h2>Configure cabin layout</h2>
+        </div>
+        
+      </div>
+
+      <div class="booking-form-grid">
+        <label>
+          Seat number
+          <input [(ngModel)]="state.staffSeatForm.seatNumber" placeholder="12A" />
+        </label>
+
+        <label>
+          Seat class
+          <select [(ngModel)]="state.staffSeatForm.seatClass">
+            <option *ngFor="let seatClass of state.staffSeatClasses" [value]="seatClass">{{ seatClass }}</option>
+          </select>
+        </label>
+
+        <label>
+          Row
+          <input type="number" min="1" [(ngModel)]="state.staffSeatForm.rowNumber" />
+        </label>
+
+        <label>
+          Column
+          <input [(ngModel)]="state.staffSeatForm.seatColumn" placeholder="A" />
+        </label>
+
+        <label>
+          Price multiplier
+          <input type="number" min="0.5" step="0.1" [(ngModel)]="state.staffSeatForm.priceMultiplier" />
+        </label>
+
+        <label class="checkbox-field">
+          <input type="checkbox" [(ngModel)]="state.staffSeatForm.isWindow" />
+          <span>Window seat</span>
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" [(ngModel)]="state.staffSeatForm.isAisle" />
+          <span>Aisle seat</span>
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" [(ngModel)]="state.staffSeatForm.hasExtraLegroom" />
+          <span>Extra legroom</span>
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="primary-button" (click)="state.saveStaffSeat()">
+          {{ state.staffSeatForm.seatId ? 'Update seat' : 'Add seat' }}
+        </button>
+        <button type="button" class="secondary-button" (click)="state.resetStaffSeatForm()">Reset seat</button>
+        <button type="button" class="ghost-button" (click)="state.clearStaffSeatMap()">Clear map</button>
+      </div>
+
+      <div class="notification-feed compact-feed" *ngIf="state.staffSeats.length; else noStaffSeats">
+        <article class="notification-card slim" *ngFor="let seat of state.staffSeats">
+          <div class="flight-topline">
+            <strong>{{ seat.seatNumber }}</strong>
+            <span class="status-pill subtle">{{ seat.seatClass }}</span>
+          </div>
+          <p>Row {{ seat.rowNumber }} · {{ seat.seatColumn }} · x{{ seat.priceMultiplier }}</p>
+          <small>{{ state.getSeatFeatureSummary(seat) }}</small>
+          <button type="button" class="ghost-button wide" (click)="state.editStaffSeat(seat)">Edit seat</button>
+        </article>
+      </div>
+
+      <ng-template #noStaffSeats>
+        <div class="empty-surface slim">
+          <h3>No seat map loaded</h3>
+          <p>Select a flight workspace and add seats with class, row, column, cabin features, and price multipliers.</p>
+        </div>
+      </ng-template>
+    </article>
+  </div>
+
+  <section class="results-section">
+    <div class="section-title-row">
+      <div>
+        <p class="section-tag">Passenger Manifest</p>
+        <h2>Passenger list for selected flight</h2>
+      </div>
+    </div>
+
+    <div class="notification-feed manifest-feed" *ngIf="state.staffManifestRows.length; else noManifest">
+      <article class="notification-card manifest-card" *ngFor="let row of state.staffManifestRows">
+        <div class="flight-topline">
+          <strong>{{ row.passengerName }}</strong>
+          <span class="status-pill subtle">{{ row.seatNumber }}</span>
+        </div>
+        <p>{{ row.pnrCode }} · {{ row.seatClass }}</p>
+        <small>{{ row.mealPreference }} · {{ row.checkInStatus }}</small>
+      </article>
+    </div>
+
+    <ng-template #noManifest>
+      <div class="empty-surface">
+        <h3>No manifest loaded</h3>
+        <p>Load the staff workspace for a flight to inspect passenger names, seats, meal preferences, and check-in status.</p>
+      </div>
+    </ng-template>
+  </section>
+</section>

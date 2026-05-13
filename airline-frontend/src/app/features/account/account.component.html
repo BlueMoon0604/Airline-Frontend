@@ -1,0 +1,154 @@
+<section class="inner-page-shell account-page">
+  <div class="inner-hero compact">
+    <div>
+      <p class="eyebrow">Account & Notifications</p>
+      <h1>Manage your profile, live trips, and notification history from one dashboard.</h1>
+      <p>This area stays connected to auth, booking, and notification services so the whole experience feels unified.</p>
+    </div>
+    <div class="hero-stat-grid compact">
+      <div class="hero-stat">
+        <span>{{ state.visibleAccountBookings.length }}</span>
+        <small>{{ state.isAdmin ? 'Bookings' : 'Trips' }}</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.isAdmin ? state.visibleAccountNotifications.length : state.notifications.length }}</span>
+        <small>Notifications</small>
+      </div>
+      <div class="hero-stat">
+        <span>{{ state.isAdmin ? state.visibleAccountNotifications.length : state.unreadCount }}</span>
+        <small>Unread</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-grid account-layout">
+    <article class="surface-card profile-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Profile</p>
+          <h2>{{ state.profileData.fullName || 'Traveller profile' }}</h2>
+          <span>{{ state.profileEmailDisplay }}</span>
+        </div>
+        <div class="button-row">
+          
+          <button type="button" class="primary-button" (click)="state.updateProfile()">Save</button>
+        </div>
+      </div>
+
+      <div class="booking-form-grid">
+        <label>
+          Full name
+          <input [(ngModel)]="state.profileData.fullName" placeholder="Not provided" />
+        </label>
+        <label>
+          Email
+          <input [value]="state.profileEmailDisplay" readonly />
+        </label>
+        <label>
+          Phone
+          <input [(ngModel)]="state.profileData.phone" placeholder="Not provided" />
+        </label>
+        <label>
+          Passport number
+          <input [(ngModel)]="state.profileData.passportNumber" placeholder="Not provided" />
+        </label>
+        <label>
+          Nationality
+          <input [(ngModel)]="state.profileData.nationality" placeholder="Not provided" />
+        </label>
+      </div>
+
+    </article>
+
+    <article class="surface-card quick-actions-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-tag">Quick Actions</p>
+          <h2>Keep everything in sync</h2>
+        </div>
+      </div>
+
+      <div class="button-cluster">
+        <button type="button" class="ghost-button wide" (click)="state.loadMyTrips()">{{ state.isAdmin ? 'Load platform bookings' : 'Load my bookings' }}</button>
+        <button type="button" class="ghost-button wide" (click)="state.loadNotifications()">{{ state.isAdmin ? 'Load platform notifications' : 'Load notifications' }}</button>
+      </div>
+
+      <div class="mini-info-card">
+        <strong>Stay ready to travel</strong>
+        <p>Your bookings, payment updates, emails, and trip notifications stay connected here so you can resume the journey without repeating steps.</p>
+      </div>
+    </article>
+  </div>
+
+  <section class="results-section">
+    <div class="section-title-row">
+      <div>
+        <p class="section-tag">My Trips</p>
+        <h2>{{ state.accountBookingsHeading }}</h2>
+      </div>
+    </div>
+
+    <div class="results-grid" *ngIf="state.visibleAccountBookings.length; else noTrips">
+      <article class="trip-card" *ngFor="let trip of state.visibleAccountBookings">
+        <div class="flight-topline">
+          <div>
+            <p class="tiny-label">PNR</p>
+            <h3>{{ trip.pnrCode || 'Pending' }}</h3>
+          </div>
+          <span class="status-pill">{{ trip.status }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Booking ID</span>
+          <strong>{{ trip.bookingId }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Total fare</span>
+          <strong>{{ trip.totalFare | currency:'INR':'symbol':'1.0-0' }}</strong>
+        </div>
+
+        <button type="button" class="primary-button wide" (click)="state.openBookingWorkspace(trip)">
+          Open booking workspace
+        </button>
+      </article>
+    </div>
+
+    <ng-template #noTrips>
+      <div class="empty-surface">
+        <h3>{{ state.isAdmin ? 'No platform bookings available yet' : 'No trips available yet' }}</h3>
+        <p>{{ state.isAdmin ? 'Platform bookings will appear here automatically as soon as they are available.' : 'Your bookings will appear here automatically as soon as they are available.' }}</p>
+      </div>
+    </ng-template>
+  </section>
+
+  <section class="results-section">
+    <div class="section-title-row">
+      <div>
+        <p class="section-tag">Notification Feed</p>
+        <h2>{{ state.accountNotificationHeading }}</h2>
+      </div>
+    </div>
+
+    <div class="notification-feed" *ngIf="state.visibleAccountNotifications.length; else noNotifications">
+      <article class="notification-card" *ngFor="let item of state.visibleAccountNotifications">
+        <div class="flight-topline">
+          <strong>{{ item.title }}</strong>
+          <span class="status-pill subtle">{{ item.channel }}</span>
+        </div>
+        <p>{{ item.message }}</p>
+        <small>{{ item.type }}</small>
+      </article>
+    </div>
+
+    <ng-template #noNotifications>
+      <div class="empty-surface">
+        <h3>No notifications available yet</h3>
+        <p>Notifications sync automatically and will appear here as soon as they are available.</p>
+      </div>
+    </ng-template>
+  </section>
+</section>
+
+
+
+
